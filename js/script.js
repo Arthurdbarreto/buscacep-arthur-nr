@@ -5,6 +5,10 @@ function mostrar() {
 	// url = "https://viacep.com.br/ws/"+cep+"/json/" // url do viacep
 	url = `https://viacep.com.br/ws/${cep}/json/` // url do viacep
 
+	log = `CEP|${new Date().toLocaleDateString('pt-BR')}|${cep}`
+
+	localStorage.setItem('logs',log)
+
 	// BUSCANDO O CEP USANDO FETCH
 	fetch(url)
 		.then((res) => { // variavel "res" irá armazenar a resposta inicial
@@ -91,4 +95,39 @@ function buscarCidades(uf) {
 		document.querySelector("#lista-cidades").innerHTML = listaCidades
 	})
 
+}
+
+function buscarLog(log) {
+	valores = log.split("|")
+	if (valores[0].trim() === "CEP") {
+		document.querySelector('#cep-tab-link a').click();
+		document.querySelector("#cep").value = valores[2].trim()
+		setTimeout(() => {
+			mostrar()
+		}, 1000)
+	} else {
+		document.querySelector('#rua-tab-link a').click();
+		dados = valores[2].split("-")
+		document.querySelector("#lista-ufs").value = dados[0]
+		buscarCidades(dados[0])
+		document.querySelector("#rua").value = dados[2]
+		setTimeout(() => {
+			document.querySelector("#lista-cidades").value = dados[1]
+			mostrarRua()
+		}, 500)
+
+	}
+}
+
+function carregarLogs(){
+	logs = localStorage.getItem("logs")
+
+	listaLogs = 
+	`
+	<li class="collection-item">
+    <div>${logs}<a href="#!" class="secondary-content"><i onclick="buscarLog('${logs}')"
+            class="material-icons">remove_red_eye</i></a></div>
+    </li>
+	`
+	document.querySelector("#lista-logs").innerHTML = listaLogs
 }

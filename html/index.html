@@ -20,7 +20,7 @@
       </ul>
 
       <ul id="nav-mobile" class="sidenav">
-        <li><a href="#">Navbar Lin k</a></li>
+        <li><a href="#">Navbar Link</a></li>
       </ul>
       <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
     </div>
@@ -30,9 +30,9 @@
       <div class="row">
         <div class="col s12">
           <ul class="tabs">
-            <li class="tab col s3"><a class="active" href="#cep-tab">CEP</a></li>
-            <li class="tab col s3"><a href="#rua-tab">RUA</a></li>
-            <li class="tab col s3"><a href="#log-tab">LOG</a></li>
+            <li id="cep-tab-link" class="tab col s3"><a class="active" href="#cep-tab">CEP</a></li>
+            <li id="rua-tab-link" class="tab col s3"><a href="#rua-tab">RUA</a></li>
+            <li onclick="carregarLogs()" class="tab col s3"><a href="#log-tab">LOG</a></li>
           </ul>
         </div>
         <!-- CONTEUDO DO CEP -->
@@ -122,7 +122,15 @@
         </div>
 
         <!-- CONTEUDO DO LOG -->
-        <div id="log-tab" class="col s12">LOG</div>
+        <div id="log-tab" class="col s12">
+          <h1 class="header adjust-top center orange-text"> Lista LOG</h1>
+          <div class="row center">
+            <h5 class="header adjust-top col s12 light">Lista de logs das buscas</h5>
+
+            <ul id="lista-logs" class="collection with-header">
+            </ul>
+          </div>
+        </div>
       </div>
 
 
