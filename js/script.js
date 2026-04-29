@@ -1,46 +1,96 @@
-// Função de buscar por CEP
-function mostrar() {
+function obterLogs() {
+	const logsSalvos = localStorage.getItem("logs")
 
-	cep = document.getElementById("cep").value // pegando valor do cep
-	// url = "https://viacep.com.br/ws/"+cep+"/json/" // url do viacep
-	url = `https://viacep.com.br/ws/${cep}/json/` // url do viacep
+	if (!logsSalvos) {
+		return []
+	}
 
-	log = `CEP|${new Date().toLocaleDateString('pt-BR')}|${cep}`
+	try {
+		const logs = JSON.parse(logsSalvos)
+		return Array.isArray(logs) ? logs : []
+	} catch (error) {
+		const valores = logsSalvos.split("|")
 
-	localStorage.setItem('logs',log)
+		if (valores[0] && valores[0].trim() === "CEP") {
+			return [{
+				tipo: "CEP",
+				data: valores[1],
+				cep: valores[2]
+			}]
+		}
 
-	// BUSCANDO O CEP USANDO FETCH
-	fetch(url)
-		.then((res) => { // variavel "res" irá armazenar a resposta inicial
-			return res.json() // convertendo a resposta em JSON
+		return []
+	}
+}
+
+function salvarLog(log) {
+	const logs = obterLogs()
+	logs.unshift(log)
+	localStorage.setItem("logs", JSON.stringify(logs))
+}
+
+function escapeHtml(valor) {
+	return String(valor || "")
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;")
+}
+
+// Funcao de buscar por CEP
+function mostrar(registrarLog = true) {
+	cep = document.getElementById("cep").value
+	url = `https://viacep.com.br/ws/${cep}/json/`
+
+	if (registrarLog) {
+		salvarLog({
+			tipo: "CEP",
+			data: new Date().toLocaleDateString("pt-BR"),
+			cep
 		})
-		.then((cep) => { // variavel "cep" contendo o json com o CEP do viacep
-			console.log("Oi, meu CEP É no fetch", cep) // imprimindo os dados do cep
+	}
+
+	fetch(url)
+		.then((res) => {
+			return res.json()
+		})
+		.then((cep) => {
+			console.log("Oi, meu CEP e no fetch", cep)
 			document.getElementById("cidade").value = cep.localidade
 			document.getElementById("bairro").value = cep.bairro
 			document.getElementById("ddd").value = cep.ddd
 			document.getElementById("estado").value = cep.uf
 			M.updateTextFields()
 		})
-	// FIM DA IMPLEMENTAÇÃO DO FETCH
-	console.log("Oi, meu CEP É fora", cep)
-}
-// tag fechamento do script JS
 
-// Função de buscar por rua
-function mostrarRua() {
+	console.log("Oi, meu CEP e fora", cep)
+}
+
+// Funcao de buscar por rua
+function mostrarRua(registrarLog = true) {
 	uf = $("#lista-ufs").val()
 	cidade = $("#lista-cidades").val()
 	rua = $("#rua").val()
 
-	url = `https://viacep.com.br/ws/${uf}/${cidade}/${rua}/json/` // url do viacep
+	url = `https://viacep.com.br/ws/${uf}/${cidade}/${rua}/json/`
+
+	if (registrarLog) {
+		salvarLog({
+			tipo: "RUA",
+			data: new Date().toLocaleDateString("pt-BR"),
+			uf,
+			cidade,
+			rua
+		})
+	}
 
 	fetch(url)
-		.then((res) => { // variavel "res" irá armazenar a resposta inicial
-			return res.json() // convertendo a resposta em JSON
+		.then((res) => {
+			return res.json()
 		})
-		.then((ruas) => { // variavel "cep" contendo o json com o CEP do viacep
-			console.log("AQUI AS RUAS", ruas) // imprimindo os dados do cep
+		.then((ruas) => {
+			console.log("AQUI AS RUAS", ruas)
 
 			let listaRuas = ""
 
@@ -54,22 +104,21 @@ function mostrarRua() {
 			}
 
 			document.querySelector("#lista-ruas").innerHTML = listaRuas
-			confetti();
+			confetti()
 		})
 }
 
 function buscarUFs() {
+	const cepInput = document.getElementById("cep")
 
-	const cepInput = document.getElementById("cep");
-
-	const mask = IMask(cepInput, {
-		mask: '00000-000'
-	});
+	IMask(cepInput, {
+		mask: "00000-000"
+	})
 
 	url = "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
 	listaUfs = '<option value="" disabled selected>Escolha uma UF</option>'
 
-	axios.get(url) // AXIOS
+	axios.get(url)
 		.then((ufs) => {
 			console.log("com axios", ufs.data)
 
@@ -83,51 +132,70 @@ function buscarUFs() {
 buscarUFs()
 
 function buscarCidades(uf) {
-
 	url = `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`
-	listaCidades = '<option value="" disabled selected>Escolha umaa Cidade</option>'
+	listaCidades = '<option value="" disabled selected>Escolha uma Cidade</option>'
 
-	$.get(url, (cidades) => { //AJAX
-
+	return $.get(url, (cidades) => {
 		for (let cidade of cidades) {
 			listaCidades += `<option value="${cidade.nome}">${cidade.nome}</option>`
 		}
 		document.querySelector("#lista-cidades").innerHTML = listaCidades
 	})
-
 }
 
-function buscarLog(log) {
-	valores = log.split("|")
-	if (valores[0].trim() === "CEP") {
-		document.querySelector('#cep-tab-link a').click();
-		document.querySelector("#cep").value = valores[2].trim()
-		setTimeout(() => {
-			mostrar()
-		}, 1000)
-	} else {
-		document.querySelector('#rua-tab-link a').click();
-		dados = valores[2].split("-")
-		document.querySelector("#lista-ufs").value = dados[0]
-		buscarCidades(dados[0])
-		document.querySelector("#rua").value = dados[2]
-		setTimeout(() => {
-			document.querySelector("#lista-cidades").value = dados[1]
-			mostrarRua()
-		}, 500)
+async function buscarLog(indice) {
+	const log = obterLogs()[indice]
 
+	if (!log) {
+		return
+	}
+
+	if (log.tipo === "CEP") {
+		document.querySelector("#cep-tab-link a").click()
+		document.querySelector("#cep").value = log.cep
+		M.updateTextFields()
+
+		setTimeout(() => {
+			mostrar(false)
+		}, 300)
+	} else {
+		document.querySelector("#rua-tab-link a").click()
+		document.querySelector("#lista-ufs").value = log.uf
+		await buscarCidades(log.uf)
+		document.querySelector("#lista-cidades").value = log.cidade
+		document.querySelector("#rua").value = log.rua
+		M.updateTextFields()
+
+		setTimeout(() => {
+			mostrarRua(false)
+		}, 300)
 	}
 }
 
-function carregarLogs(){
-	logs = localStorage.getItem("logs")
+function carregarLogs() {
+	const logs = obterLogs()
 
-	listaLogs = 
-	`
-	<li class="collection-item">
-    <div>${logs}<a href="#!" class="secondary-content"><i onclick="buscarLog('${logs}')"
-            class="material-icons">remove_red_eye</i></a></div>
-    </li>
-	`
+	if (logs.length === 0) {
+		document.querySelector("#lista-logs").innerHTML = '<li class="collection-item">Nenhuma busca no historico.</li>'
+		return
+	}
+
+	listaLogs = logs.map((log, indice) => {
+		const texto = log.tipo === "CEP"
+			? `CEP | ${log.data} | ${log.cep}`
+			: `RUA | ${log.data} | ${log.uf} - ${log.cidade} - ${log.rua}`
+
+		return `
+			<li class="collection-item">
+				<div>
+					${escapeHtml(texto)}
+					<a href="#!" class="secondary-content" onclick="buscarLog(${indice})">
+						<i class="material-icons">remove_red_eye</i>
+					</a>
+				</div>
+			</li>
+		`
+	}).join("")
+
 	document.querySelector("#lista-logs").innerHTML = listaLogs
 }
