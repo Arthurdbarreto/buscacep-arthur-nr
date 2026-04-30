@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1976d2">
   <title>Busca CEP</title>
 
   <!-- CSS  -->
+  <link rel="manifest" href="../manifest.json">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="../css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection" />
   <link href="../css/style.css" type="text/css" rel="stylesheet" media="screen,projection" />
@@ -15,7 +17,9 @@
 <body>
   <nav class="light-blue lighten-1" role="navigation">
     <div class="nav-wrapper container">
-      <a id="logo-container" href="#" class="brand-logo">Logo</a>
+      <a id="logo-container" href="#" class="brand-logo">
+        <img src="../img/logo_cep.png" alt="Busca CEP" class="logo-cep">
+      </a>
       <button type="button" class="menu-trigger" onclick="alternarMenu()" aria-label="Abrir menu">
         <i class="material-icons">menu</i>
       </button>
@@ -26,6 +30,7 @@
     <li><a href="#rua-tab" onclick="document.querySelector('#rua-tab-link a').click(); fecharMenu()">RUA</a></li>
     <li><a href="#log-tab" onclick="carregarLogs(); document.querySelector('#log-tab-link a').click(); fecharMenu()">LOG</a></li>
   </ul>
+  <div id="mensagem-offline" class="mensagem-offline">Sem conexão</div>
   <div class="section no-pad-bot" id="index-banner">
     <div class="container">
       <div class="row">
@@ -74,7 +79,8 @@
 
             <a onclick="mostrar()" class="waves-effect waves-light btn-small"><i
                 class="material-icons left">search</i>Buscar</a>
-            <a class="waves-effect waves-light btn-small"><i class="material-icons left">clear</i>Limpar</a>
+            <a onclick="limparCep()" class="waves-effect waves-light btn-small"><i
+                class="material-icons left">clear</i>Limpar</a>
           </div>
 
 
@@ -111,7 +117,8 @@
 
             <a onclick="mostrarRua()" class="waves-effect waves-light btn-small"><i
                 class="material-icons left">search</i>Buscar</a>
-            <a class="waves-effect waves-light btn-small"><i class="material-icons left">clear</i>Limpar</a>
+            <a onclick="limparRua()" class="waves-effect waves-light btn-small"><i
+                class="material-icons left">clear</i>Limpar</a>
           </div>
 
 

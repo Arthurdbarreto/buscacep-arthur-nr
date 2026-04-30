@@ -1,3 +1,43 @@
+if ("serviceWorker" in navigator) {
+	navigator.serviceWorker.register("../service-worker.js")
+		.then(() => console.log("Service Worker registrado"))
+		.catch((err) => console.log("Erro no SW", err))
+}
+
+function mostrarMensagemOffline() {
+	const mensagem = document.querySelector("#mensagem-offline")
+
+	if (mensagem) {
+		mensagem.classList.add("visivel")
+	}
+}
+
+function esconderMensagemOffline() {
+	const mensagem = document.querySelector("#mensagem-offline")
+
+	if (mensagem) {
+		mensagem.classList.remove("visivel")
+	}
+}
+
+function mostrarMensagem(texto) {
+	const mensagem = document.querySelector("#mensagem-offline")
+
+	if (mensagem) {
+		mensagem.textContent = texto
+		mensagem.classList.add("visivel")
+	}
+}
+
+function limparMensagem() {
+	const mensagem = document.querySelector("#mensagem-offline")
+
+	if (mensagem) {
+		mensagem.textContent = "Sem conexão"
+		mensagem.classList.remove("visivel")
+	}
+}
+
 function obterLogs() {
 	const logsSalvos = localStorage.getItem("logs")
 
@@ -70,7 +110,15 @@ document.addEventListener("click", (evento) => {
 // Funcao de buscar por CEP
 function mostrar(registrarLog = true) {
 	cep = document.getElementById("cep").value
-	url = `https://viacep.com.br/ws/${cep}/json/`
+	const cepLimpo = cep.replace(/\D/g, "")
+	url = `https://viacep.com.br/ws/${cepLimpo}/json/`
+
+	limparMensagem()
+
+	if (cepLimpo.length !== 8) {
+		mostrarMensagem("CEP inválido")
+		return
+	}
 
 	if (registrarLog) {
 		salvarLog({
@@ -84,16 +132,35 @@ function mostrar(registrarLog = true) {
 		.then((res) => {
 			return res.json()
 		})
-		.then((cep) => {
-			console.log("Oi, meu CEP e no fetch", cep)
-			document.getElementById("cidade").value = cep.localidade
-			document.getElementById("bairro").value = cep.bairro
-			document.getElementById("ddd").value = cep.ddd
-			document.getElementById("estado").value = cep.uf
+		.then((dadosCep) => {
+			if (dadosCep.erro) {
+				mostrarMensagem("CEP não encontrado")
+				return
+			}
+
+			limparMensagem()
+			console.log("Oi, meu CEP e no fetch", dadosCep)
+			document.getElementById("cidade").value = dadosCep.localidade || ""
+			document.getElementById("bairro").value = dadosCep.bairro || ""
+			document.getElementById("ddd").value = dadosCep.ddd || ""
+			document.getElementById("estado").value = dadosCep.uf || ""
 			M.updateTextFields()
+		})
+		.catch(() => {
+			mostrarMensagemOffline()
 		})
 
 	console.log("Oi, meu CEP e fora", cep)
+}
+
+function limparCep() {
+	document.getElementById("cep").value = ""
+	document.getElementById("cidade").value = ""
+	document.getElementById("bairro").value = ""
+	document.getElementById("ddd").value = ""
+	document.getElementById("estado").value = ""
+	limparMensagem()
+	M.updateTextFields()
 }
 
 // Funcao de buscar por rua
@@ -101,8 +168,11 @@ function mostrarRua(registrarLog = true) {
 	uf = $("#lista-ufs").val()
 	cidade = $("#lista-cidades").val()
 	rua = $("#rua").val()
+	const ruaPesquisada = rua
 
 	url = `https://viacep.com.br/ws/${uf}/${cidade}/${rua}/json/`
+
+	limparMensagem()
 
 	if (registrarLog) {
 		salvarLog({
@@ -119,22 +189,49 @@ function mostrarRua(registrarLog = true) {
 			return res.json()
 		})
 		.then((ruas) => {
+			limparMensagem()
 			console.log("AQUI AS RUAS", ruas)
+
+			if (!Array.isArray(ruas) || ruas.length === 0) {
+				document.querySelector("#lista-ruas").innerHTML = '<li class="collection-item">Nenhuma rua encontrada.</li>'
+				return
+			}
 
 			let listaRuas = ""
 
-			for (let rua of ruas) {
-				dadosRua = ""
-				const { ddd, ibge, regiao, siafi, ...ruaNova } = rua
-				for (let prop in ruaNova) {
-					dadosRua = dadosRua + `<h6>${ruaNova[prop]}</h6>`
-				}
-				listaRuas = listaRuas + `<li class="collection-item avatar">${dadosRua}</li>`
+			for (let endereco of ruas) {
+				const logradouro = endereco.logradouro || ruaPesquisada
+				const complemento = endereco.complemento ? `<h6>${escapeHtml(endereco.complemento)}</h6>` : ""
+				const bairro = endereco.bairro ? `<h6>${escapeHtml(endereco.bairro)}</h6>` : ""
+
+				listaRuas += `
+					<li class="collection-item avatar">
+						<h6>${escapeHtml(endereco.cep)}</h6>
+						<h6>${escapeHtml(logradouro)}</h6>
+						${complemento}
+						${bairro}
+						<h6>${escapeHtml(endereco.localidade)}</h6>
+						<h6>${escapeHtml(endereco.uf)}</h6>
+						<h6>${escapeHtml(endereco.estado)}</h6>
+					</li>
+				`
 			}
 
 			document.querySelector("#lista-ruas").innerHTML = listaRuas
 			confetti()
 		})
+		.catch(() => {
+			mostrarMensagemOffline()
+		})
+}
+
+function limparRua() {
+	document.querySelector("#lista-ufs").value = ""
+	document.querySelector("#lista-cidades").innerHTML = '<option value="" disabled selected>Escolha uma Cidade</option>'
+	document.querySelector("#rua").value = ""
+	document.querySelector("#lista-ruas").innerHTML = ""
+	limparMensagem()
+	M.updateTextFields()
 }
 
 function buscarUFs() {
@@ -149,12 +246,16 @@ function buscarUFs() {
 
 	axios.get(url)
 		.then((ufs) => {
+			esconderMensagemOffline()
 			console.log("com axios", ufs.data)
 
 			for (let uf of ufs.data) {
 				listaUfs += `<option value="${uf.sigla}">${uf.nome}</option>`
 			}
 			document.querySelector("#lista-ufs").innerHTML = listaUfs
+		})
+		.catch(() => {
+			mostrarMensagemOffline()
 		})
 }
 
@@ -165,10 +266,13 @@ function buscarCidades(uf) {
 	listaCidades = '<option value="" disabled selected>Escolha uma Cidade</option>'
 
 	return $.get(url, (cidades) => {
+		esconderMensagemOffline()
 		for (let cidade of cidades) {
 			listaCidades += `<option value="${cidade.nome}">${cidade.nome}</option>`
 		}
 		document.querySelector("#lista-cidades").innerHTML = listaCidades
+	}).fail(() => {
+		mostrarMensagemOffline()
 	})
 }
 
