@@ -14,17 +14,18 @@
 
 <body>
   <nav class="light-blue lighten-1" role="navigation">
-    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
-      <ul class="right hide-on-med-and-down">
-        <li><a href="#">Navbar Link</a></li>
-      </ul>
-
-      <ul id="nav-mobile" class="sidenav">
-        <li><a href="#">Navbar Link</a></li>
-      </ul>
-      <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+    <div class="nav-wrapper container">
+      <a id="logo-container" href="#" class="brand-logo">Logo</a>
+      <button type="button" class="menu-trigger" onclick="alternarMenu()" aria-label="Abrir menu">
+        <i class="material-icons">menu</i>
+      </button>
     </div>
   </nav>
+  <ul id="nav-mobile" class="menu-opcoes">
+    <li><a href="#cep-tab" onclick="document.querySelector('#cep-tab-link a').click(); fecharMenu()">CEP</a></li>
+    <li><a href="#rua-tab" onclick="document.querySelector('#rua-tab-link a').click(); fecharMenu()">RUA</a></li>
+    <li><a href="#log-tab" onclick="carregarLogs(); document.querySelector('#log-tab-link a').click(); fecharMenu()">LOG</a></li>
+  </ul>
   <div class="section no-pad-bot" id="index-banner">
     <div class="container">
       <div class="row">
@@ -32,7 +33,7 @@
           <ul class="tabs">
             <li id="cep-tab-link" class="tab col s3"><a class="active" href="#cep-tab">CEP</a></li>
             <li id="rua-tab-link" class="tab col s3"><a href="#rua-tab">RUA</a></li>
-            <li onclick="carregarLogs()" class="tab col s3"><a href="#log-tab">LOG</a></li>
+            <li id="log-tab-link" onclick="carregarLogs()" class="tab col s3"><a href="#log-tab">LOG</a></li>
           </ul>
         </div>
         <!-- CONTEUDO DO CEP -->
@@ -136,8 +137,6 @@
 
     </div>
   </div>
-
-
 
   <!--  Scripts CDN-->
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>

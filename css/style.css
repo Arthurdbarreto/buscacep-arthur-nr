@@ -15,3 +15,57 @@
 .adjust-top{
 	margin-top:2px;
 }
+
+.menu-trigger {
+	position: fixed;
+	top: 10px;
+	right: 18px;
+	width: 54px;
+	height: 44px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	z-index: 1100;
+}
+
+.menu-trigger i {
+	font-size: 36px;
+	color: #000;
+}
+
+.menu-opcoes {
+	position: fixed;
+	top: 58px;
+	right: 18px;
+	display: none;
+	min-width: 130px;
+	margin: 0;
+	padding: 8px 0;
+	background: #fff;
+	border-radius: 6px;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+	z-index: 1099;
+}
+
+.menu-opcoes.aberto {
+	display: block;
+}
+
+.menu-opcoes li {
+	list-style: none;
+}
+
+.menu-opcoes li a {
+	display: block;
+	padding: 12px 18px;
+	color: #222;
+	font-weight: 600;
+	letter-spacing: 0;
+}
+
+.menu-opcoes li a:hover {
+	background: #f2f2f2;
+}

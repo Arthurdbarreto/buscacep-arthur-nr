@@ -38,6 +38,35 @@ function escapeHtml(valor) {
 		.replace(/'/g, "&#039;")
 }
 
+function fecharMenu() {
+	const menu = document.querySelector("#nav-mobile")
+
+	if (menu) {
+		menu.classList.remove("aberto")
+	}
+}
+
+function alternarMenu() {
+	const menu = document.querySelector("#nav-mobile")
+
+	if (menu) {
+		menu.classList.toggle("aberto")
+	}
+}
+
+document.addEventListener("click", (evento) => {
+	const menu = document.querySelector("#nav-mobile")
+	const botaoMenu = document.querySelector(".menu-trigger")
+
+	if (!menu || !botaoMenu) {
+		return
+	}
+
+	if (!menu.contains(evento.target) && !botaoMenu.contains(evento.target)) {
+		fecharMenu()
+	}
+})
+
 // Funcao de buscar por CEP
 function mostrar(registrarLog = true) {
 	cep = document.getElementById("cep").value
